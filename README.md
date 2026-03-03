@@ -16,7 +16,7 @@ Add middleware function to express http routes
 
 ```ts
 import express from 'express';
-import { cashu } from './middleware';
+import { cashu } from 'express-cashu';
 
 const app = express();
 
@@ -39,7 +39,6 @@ app.use('/', cashu({
 app.get('/', (_req, res) => {
     res.send('Payday!');
 });
-
 ```
 
 Server responds with http 402 status code and `X-Cashu` header, containing the payment request `creqA...`
