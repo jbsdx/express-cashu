@@ -1,6 +1,6 @@
 {
   "name": "express-cashu",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Express JS cashu middleware",
   "homepage": "https://github.com/jbsdx/express-cashu#readme",
   "bugs": {
