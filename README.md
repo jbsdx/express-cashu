@@ -24,7 +24,7 @@ const paymentCallback = async (token: string) => {
     console.log('Received payment', token);
 };
 
-app.get('/', cashu({
+app.use('/', cashu({
     amount: () => {
         // expected payment amount in satoshi
         return Promise.resolve(5);
@@ -35,6 +35,11 @@ app.get('/', cashu({
     lockedPubkeys: [],
     trustedMints: ['https://mint.lnserver.com']
 }));
+
+app.get('/', (_req, res) => {
+    res.send('Payday!');
+});
+
 ```
 
 Server responds with http 402 status code and `X-Cashu` header, containing the payment request `creqA...`
