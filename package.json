@@ -1,0 +1,55 @@
+{
+  "name": "express-cashu",
+  "version": "0.0.0",
+  "description": "Express JS cashu middleware",
+  "homepage": "https://github.com/jbsdx/express-cashu#readme",
+  "bugs": {
+    "url": "https://github.com/jbsdx/express-cashu/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "express",
+    "nodeJS",
+    "cashu",
+    "middleware"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbsdx/express-cashu.git"
+  },
+  "license": "MIT",
+  "author": {
+    "email": "dev@jbnz.de",
+    "name": "JB",
+    "url": "https://github.com/jbsdx"
+  },
+  "scripts": {
+    "test": "node -r ts-node/register --test ./src/**/*spec.ts",
+    "test:coverage": "node -r ts-node/register --experimental-test-coverage --test ./src/**/*spec.ts",
+    "version": "conventional-changelog && git add CHANGELOG.md",
+    "build": "npx tsc"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENCE",
+    "package.json"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/express": "^5.0.6",
+    "@types/supertest": "^7.2.0",
+    "conventional-changelog": "^7.2.0",
+    "eslint": "^10.0.0",
+    "supertest": "^7.2.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.0"
+  },
+  "dependencies": {
+    "@cashu/cashu-ts": "^3.5.0",
+    "express": "^5.2.1"
+  }
+}
