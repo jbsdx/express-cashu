@@ -44,7 +44,7 @@ app.get('/', (_req, res) => {
 Server responds with http 402 status code and `X-Cashu` header, containing the payment request `creqA...`
 
 ```http
-X-Cashu: creqAo2FhBWF1Y3NhdGFt...==
+X-Cashu: creqAo2FhBWF1Y3NhdGFt...
 ```
 
 The client sends a cashu token with the requested amount to pay for the service
@@ -103,7 +103,7 @@ async function payToServer() {
     const cashuString = getEncodedTokenV4(token);
 
     // finally pay the requested amount with encoded token
-    await fetch('http://localhost:3000', {
+    await fetch(protectedApiUrl, {
         headers: {
             'x-cashu': cashuString
         }

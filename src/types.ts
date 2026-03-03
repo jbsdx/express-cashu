@@ -21,9 +21,9 @@ export type CashuOptions = {
      */
     amount: number | ((req: Request) => Promise<number>);
     /**
-     * Callback function to receive the back-token
+     * Callback function triggered after succesful payments
      */
-    paymentCallback: ((backToken: string) => Promise<void>);
+    paymentCallback: ((token: string, req: Request) => Promise<void>);
     /**
      * Set list of trustet mint URLs, e.g. 'https://mint.lnserver.com'
      */

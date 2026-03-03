@@ -36,7 +36,7 @@ export const cashu = (options?: CashuOptions) =>
         const receiveResponse = await receiveToken(options, decodedToken);
 
         if (receiveResponse.token) {
-            await options.paymentCallback(receiveResponse.token);
+            await options.paymentCallback(receiveResponse.token, req);
         } else {
             return res.status(400).json({
                 error: receiveResponse.error,
