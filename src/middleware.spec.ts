@@ -1,7 +1,9 @@
 import supertest from 'supertest';
 import express from 'express';
+import assert from 'node:assert';
 import { before, describe, it } from 'node:test';
 import { cashu } from './middleware';
+import { validateAmount } from './lib';
 
 describe('Test middleware function', () => {
 
@@ -15,7 +17,7 @@ describe('Test middleware function', () => {
             paymentCallback: async () => { },
             unit: 'sat',
             debug: false,
-            lockedPubkeys: [],
+            nut10: undefined,
             trustedMints: ['https://mint.lnserver.com']
         }));
 
@@ -26,7 +28,7 @@ describe('Test middleware function', () => {
         await request
             .get('/')
             .expect(402)
-            .expect('x-cashu', 'creqAo2FhBWF1Y3NhdGFtgXgZaHR0cHM6Ly9taW50Lmxuc2VydmVyLmNvbQ==');
+            .expect('x-cashu', 'creqApGFhBWF1Y3NhdGFtgXgZaHR0cHM6Ly9taW50Lmxuc2VydmVyLmNvbWFz9Q==');
     });
 
     it('should fail with invalid token', async () => {
@@ -34,5 +36,23 @@ describe('Test middleware function', () => {
             .get('/')
             .set('x-cashu', 'cashuBfake=')
             .expect(400);
+    });
+
+    it('should validate payment amount', async () => {
+        const am1 = await validateAmount(10, 10, { exactAmount: true });
+        const am2 = await validateAmount(9, 10, { exactAmount: true });
+        const am3 = await validateAmount(10, 9, { exactAmount: true });
+        const am4 = await validateAmount(10, 10, {});
+        const am5 = await validateAmount(10, 10, { exactAmount: false });
+        const am6 = await validateAmount(10, 11, { exactAmount: false });
+        const am7 = await validateAmount(10, 9, { exactAmount: false });
+
+        assert(am1 === undefined);
+        assert(typeof am2 === 'object');
+        assert(typeof am3 === 'object');
+        assert(am4 === undefined);
+        assert(am5 === undefined);
+        assert(am6 === undefined);
+        assert(typeof am7 === 'object');
     });
 });

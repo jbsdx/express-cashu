@@ -1,16 +1,23 @@
 import { Request } from 'express';
 import { Token, getDecodedToken } from '@cashu/cashu-ts';
-import { CashuOptions, ErrorResponse } from '../types';
+import { CashuOptions } from '../types';
 import { parseAmount } from './parse-amount';
+import { validateAmount } from './validate-amount';
+
+type ErrorResponse = {
+    error: string;
+    message: string;
+    token: Token;
+}
 
 /**
  * Validates cashu token from client request
  */
 export async function validateToken(
     token: string,
-    options: Pick<CashuOptions, 'debug' | 'amount' | 'trustedMints'>,
+    options: Pick<CashuOptions, 'debug' | 'amount' | 'trustedMints' | 'exactAmount'>,
     req: Request,
-): Promise<Partial<ErrorResponse & { token: Token }>> {
+): Promise<Partial<ErrorResponse>> {
     const { debug } = options;
 
     let decodedToken: Token;
@@ -39,15 +46,15 @@ export async function validateToken(
         };
     }
 
+    const expectedAmount = await parseAmount(options, req);
     const totalAmount = decodedToken.proofs.reduce((sum, proof) => sum + proof.amount, 0);
 
-    const _amount = await parseAmount(options, req);
+    const amountValidation = await validateAmount(expectedAmount, totalAmount, options);
 
-    const isWrongAmount = totalAmount !== _amount;
-    if (isWrongAmount) {
+    if (amountValidation) {
         return {
-            error: 'wrong_amount',
-            message: `Wrong amount, must be ${_amount} satoshi`,
+            error: amountValidation.error,
+            message: amountValidation.message
         };
     }
 

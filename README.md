@@ -20,24 +20,18 @@ import { cashu } from 'express-cashu';
 
 const app = express();
 
-const paymentCallback = async (token: string) => {
-    console.log('Received payment', token);
-};
-
 app.use('/', cashu({
-    amount: () => {
-        // expected payment amount in satoshi
-        return Promise.resolve(5);
+    paymentCallback: async (token: string, _req: express.Request) => {
+        console.log('Received payment', token);
     },
-    paymentCallback,
+    trustedMints: ['https://mint.lnserver.com'],
+    amount: 10,
     unit: 'sat',
-    debug: true,
-    lockedPubkeys: [],
-    trustedMints: ['https://mint.lnserver.com']
+    debug: true
 }));
 
 app.get('/', (_req, res) => {
-    res.send('Payday!');
+    res.send('Payment received!');
 });
 ```
 

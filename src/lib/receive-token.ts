@@ -1,25 +1,35 @@
 import { Token, Wallet, Proof, getEncodedTokenV4 } from '@cashu/cashu-ts';
-import { CashuOptions, ErrorResponse } from '../types';
+import { CashuOptions } from '../types';
+
+type ErrorResponse = {
+    error: string;
+    message: string;
+    token: string;
+}
 
 /**
  * Creates wallet to receive token from client request
  */
 export async function receiveToken(
-    options: Pick<CashuOptions, 'debug' | 'lockedPubkeys'>,
+    options: Pick<CashuOptions, 'debug'>,
     token: Token
-): Promise<Partial<ErrorResponse & { token: string }>> {
-    const { debug, lockedPubkeys } = options;
+): Promise<Partial<ErrorResponse>> {
+    const { debug } = options;
 
     // create new wallet
     const wallet = new Wallet(token.mint);
     await wallet.loadMint();
 
-    let receiveProofs: Proof[];
     try {
-        if (lockedPubkeys?.length > 0)
-            receiveProofs = await wallet.ops.receive(token).asP2PK({ pubkey: lockedPubkeys }).run();
-        else
-            receiveProofs = await wallet.receive(token);
+        // TODO: add nut-10 locking conditions
+        const receiveProofs: Proof[] = await wallet.receive(token);
+
+        const backToken = getEncodedTokenV4({
+            mint: token.mint,
+            proofs: receiveProofs
+        });
+
+        return { token: backToken };
     } catch (error) {
         if (debug)
             console.error(error);
@@ -37,10 +47,4 @@ export async function receiveToken(
         };
     }
 
-    const backToken = getEncodedTokenV4({
-        mint: token.mint,
-        proofs: receiveProofs
-    });
-
-    return { token: backToken };
 }

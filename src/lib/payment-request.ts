@@ -8,29 +8,28 @@ import { PaymentRequest } from '@cashu/cashu-ts';
  * Sends payment http request to client
  */
 export async function sendPaymentRequest(
-    options: Pick<CashuOptions, 'unit' | 'trustedMints' | 'lockedPubkeys' | 'amount'>,
+    options: Pick<CashuOptions, 'unit' | 'trustedMints' | 'nut10' | 'amount'>,
     req: Request,
     res: Response
-) {
-    const { unit, lockedPubkeys, trustedMints } = options;
+): Promise<void> {
+    const { unit, nut10, trustedMints } = options;
 
-    const _amount = await parseAmount(options, req);
+    const amount = await parseAmount(options, req);
 
-    assert(Number.isInteger(_amount), 'Received invalid value for `amount`');
+    assert(Number.isInteger(amount), 'Received invalid value for `amount`');
 
-    const nut24Request = {
-        'a': _amount,
-        'u': unit,
-        'm': trustedMints,
-    };
-
-    if (lockedPubkeys?.length > 0) {
-        nut24Request['nut10'] = ['pubkeys', ...lockedPubkeys];
-    }
-
-    const _token = PaymentRequest.fromRawRequest(nut24Request);
+    const nut24Request = new PaymentRequest(
+        undefined,
+        undefined,
+        amount,
+        unit,
+        trustedMints,
+        undefined,
+        true,
+        nut10
+    );
 
     // add cashu payment request in header
-    res.header('X-Cashu', _token.toEncodedCreqA());
+    res.header('X-Cashu', nut24Request.toEncodedCreqA());
     res.sendStatus(402);
 }
