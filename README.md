@@ -50,53 +50,57 @@ X-Cashu: cashuBo2FteBlodHRwczovL...
 Payment Example:
 
 ```ts
-import { decodePaymentRequest, getEncodedTokenV4, Proof, Token, Wallet, } from '@cashu/cashu-ts';
+import { decodePaymentRequest, getEncodedTokenV4, Proof, Wallet, } from '@cashu/cashu-ts';
+
+const protectedApiUrl = 'http://localhost:3000';
+const mintUrl = 'https://mint.lnserver.com';
+
+// Internal proof storage
+const storage: { remainingProofs: Proof[], sentProof: Proof[] } = {
+    remainingProofs: [],
+    sentProof: []
+};
 
 payToServer();
 
 async function payToServer() {
-    const protectedApiUrl = 'http://localhost:3000';
-
-    // try access the API resource
+    // try access the resource
     const req = await fetch(protectedApiUrl);
 
-    // decode the received payment request from the API resource
+    // decode the received payment request from the resource
     const paymentRequest = req.headers.get('x-cashu');
     const decodedPaymentRequest = decodePaymentRequest(paymentRequest);
-    const mintUrl = decodedPaymentRequest.mints[0];
 
-    // Internal stored proofs
-    let proofs: Proof[];
-    let sentProofs: Proof[];
+    // check if used mint is accepted by the resource
+    if (!decodedPaymentRequest.mints.includes(mintUrl)) {
+        throw new Error('Mint not accepted: ' + mintUrl);
+    }
 
     // Init wallet
     const wallet = new Wallet(mintUrl);
     await wallet.loadMint();
 
-    // Example: get proofs from cashu token
+    // Example: get list of proofs from cashu token..
     const storedToken = 'cashuBo2FteBlo....';
     const decodedToken = wallet.decodeToken(storedToken);
-    proofs = decodedToken.proofs;
+    storage.remainingProofs = decodedToken.proofs;
 
-    // now use your proofs and send the requested amount back to the resource
-    const { keep, send } = await wallet.send(decodedPaymentRequest.amount, proofs);
+    // Send proofs to mint
+    const { keep, send } = await wallet.send(decodedPaymentRequest.amount, storage.remainingProofs);
 
     // update remaining proof list
-    proofs = keep;
+    storage.remainingProofs = keep;
 
     // store sent proofs to redeem them back later, if the receiver does not claim them
-    sentProofs = send;
-
-    // create a token with proof list
-    const token: Token = {
-        mint: mintUrl,
-        proofs: send
-    };
+    storage.sentProof = send;
 
     // encode the token as a cashu string
-    const cashuString = getEncodedTokenV4(token);
+    const cashuString = getEncodedTokenV4({
+        mint: mintUrl,
+        proofs: send
+    });
 
-    // finally pay the requested amount with encoded token
+    // pay the requested amount with encoded token
     await fetch(protectedApiUrl, {
         headers: {
             'x-cashu': cashuString
